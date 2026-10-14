@@ -1,78 +1,95 @@
-# Causal prior–residual learning for BMS-reported electric-vehicle SoC
+# Causal Prior–Residual Learning for BMS-Reported State-of-Charge Estimation
 
-Research code and experiment sources accompanying an **Applied Energy** manuscript on label-efficient reconstruction of **production BMS-reported state of charge (SoC)**. The target is the value reported by the vehicle/BMS — **not** independently established electrochemical true SoC.
+Research code accompanying the manuscript **“Causal Prior–Residual Learning for Label-Efficient Reconstruction of BMS State of Charge.”**
 
-The model uses a *trusted BMS SoC measurement at the start of each physical segment*. This measurement is an input, not a free observation. Periodic re-anchoring, when used, requires **additional trusted BMS observations**, whose costs are reported explicitly.
+This repository investigates data-efficient estimation of the **state of charge (SoC) reported by a vehicle's production battery management system (BMS)**. The prediction target is BMS-reported SoC, **not an independently measured electrochemical ground-truth SoC**.
 
-## Get started
+## Overview
 
-Requirements: Python 3.10+; a CUDA GPU only for fresh GRU training. The `all` extra installs PyTorch, which the offline training-contract tests import (a GPU is **not** required to run those tests). From the repository root:
+The approach combines a structured, domain-informed SoC prior with a learned residual correction:
+
+$$
+\widehat{\mathrm{SoC}}(t) = \mathrm{SoC}_{\mathrm{prior}}(t) + \widehat{r}(t).
+$$
+
+The structured prior uses available operating information, including charge throughput and/or distance-based signals as appropriate to each dataset. The residual model learns the remaining discrepancy. We evaluate this *PriorResidual+Prior* formulation against an information-matched *Direct+Prior* model, including experiments with limited training-target observations.
+
+A trusted **BMS SoC measurement at the beginning of each segment** provides the initial anchor. Where periodic re-anchoring is studied, additional BMS observations are counted explicitly rather than treated as free information.
+
+The research spans five EV telemetry domains (**VED, KU, SCUT, TUM, EVE**) and includes label-efficiency, segment-aware evaluation, robustness, trajectory, and fixed-time sensitivity analyses.
+
+## Repository structure
+
+| Path | Contents |
+|---|---|
+| [`soc_repro/`](soc_repro/) | Python implementation of the primary training and evaluation pipeline |
+| [`scripts/`](scripts/) | Dataset checks, source checks, and figure-generation utilities |
+| [`experiments/notebook_exports/`](experiments/notebook_exports/) | Readable `.py` exports of the experiment notebooks |
+| [`legacy_sources/notebooks/`](legacy_sources/notebooks/) | Original research notebooks (`.ipynb`) |
+| [`notebooks/updated_colab/`](notebooks/updated_colab/) | Updated Colab notebooks for re-anchoring analyses |
+| [`references/`](references/) | Small, archived aggregate tables used for reproducible summary checks |
+| [`tests/`](tests/) | Automated tests |
+| [`docs/`](docs/) | Dataset specification, reproduction guide, and experiment-to-code mapping |
+
+**Note:** The `.py` notebook exports preserve the original notebook code for inspection. Some require Google Colab or experiment-specific data and are not standalone command-line programs. Use `soc_repro/` for the supported Python entry points.
+
+## Installation
+
+Python **3.10+** is required. A **CUDA-capable GPU** is required for fresh neural-network training; the checks and archived-figure generation can run without one.
 
 ```bash
+git clone https://github.com/ahmet-metin/bms-soc-prior-residual.git
+cd bms-soc-prior-residual
 python -m pip install -e '.[all]'
+```
+
+## Reproducing results
+
+### Code checks and an archived aggregate figure
+
+These commands use files included in this repository; they do **not** retrain models or require the original EV telemetry.
+
+```bash
 python -m unittest discover -s tests -v
 python scripts/verify_sources.py
-python scripts/export_notebooks_to_py.py --check
 python scripts/check_archived_aulec.py
 python scripts/figure2_from_archived.py
 ```
 
-These commands test the code and reproduce an **archived aggregate** label-efficiency plot *without* downloading telemetry or retraining models. For GPU training, supply your own legally obtained canonical data; see [data layout](docs/DATA_LAYOUT.md) and [runbook](docs/RUNBOOK.md).
+The last command writes an aggregate label-efficiency figure under `outputs/`.
+
+### Training with your own prepared datasets
+
+The main training pipeline requires **frozen, preprocessed canonical tables**, which are not bundled with the source code. After preparing the inputs described in [`docs/DATA_LAYOUT.md`](docs/DATA_LAYOUT.md):
 
 ```bash
-# Optional: validate locally supplied canonical inputs
 python scripts/check_inputs.py --root /path/to/DATA_ROOT
-python -m soc_repro.prepare --root /path/to/DATA_ROOT
+python -m soc_repro --root /path/to/DATA_ROOT --run-root /path/to/RESULTS --max-hours 7
+python -m soc_repro --run-root /path/to/RESULTS --status --verify-hashes
+```
 
-# Optional: run/resume R2C 5 × 7 × 5 × 2 training grid, requires CUDA
-python -m soc_repro --root /path/to/DATA_ROOT --run-root /path/to/RUN_RESULTS --max-hours 7
-python -m soc_repro --run-root /path/to/RUN_RESULTS --status --verify-hashes
+The runner supports resumable execution. To regenerate supported summary analyses from a complete seed-averaged prediction table and its observation-budget summary:
 
-# Optional: rederive R7/R6/Rev3B tables from a complete frozen prediction file
+```bash
 python -m soc_repro.report \
-  --predictions /path/to/R2C_SEED_AVERAGED_PREDICTIONS.parquet \
-  --budget /path/to/R2C_EFFECTIVE_BUDGET_SUMMARY.csv \
+  --predictions /path/to/SEED_AVERAGED_PREDICTIONS.parquet \
+  --budget /path/to/EFFECTIVE_BUDGET_SUMMARY.csv \
   --output-dir /path/to/REPORTS
 ```
 
-## Python source files
+See the [reproduction guide](docs/RUNBOOK.md) for input requirements, scope, and experiment-specific workflows.
 
-**Yes — the main R2C algorithms are available as `.py` modules in `soc_repro/`.** For code review and reuse, this v07 release also supplies `.py` mirrors of all 28 original plus 2 corrected experiment notebooks under `experiments/notebook_exports/`. These mirrors are Colab-dependent source exports, **not independently verified standalone scripts**. See [Python entry points](docs/PYTHON_ENTRYPOINTS.md) and regenerate/verify them with `python scripts/export_notebooks_to_py.py --check`.
+## Data availability and reproducibility
 
-## Repository structure
+- **Raw EV telemetry, private data files, trained checkpoints, and individual vehicle prediction records are not distributed** in this repository. Obtain the underlying datasets from their respective providers subject to applicable terms, and prepare the documented canonical inputs.
+- The included aggregate tables support checking selected published calculations and generating a reference visualization. They are **not a substitute for training the models on the original data**.
+- Several supplementary studies are preserved as original notebooks with readable Python exports; their execution may require additional dependencies or Colab-specific setup.
+- The repository documents source provenance and the scope of verification in [`docs/`](docs/). Availability of code and archived results should not be interpreted as proof of an independent end-to-end retraining of every experiment.
 
-| Directory | Purpose |
-|---|---|
-| `experiments/notebook_exports/` | Readable `.py` mirrors of 30 research notebooks; Colab/Drive-dependent, not standalone-certified |
-| `soc_repro/` | Main reusable R2C trainer, resume logic, inputs/audit, label-efficiency, anchor-age, and re-anchoring analyses |
-| `legacy_sources/notebooks/` | 28 frozen experiment source notebooks across preprocessing, baselines, inference, robustness and fixed-time studies; original source hashes retained |
-| `notebooks/updated_colab/` | Output-free corrected Rev3B and Rev3E notebooks, separately from original archived sources |
-| `references/` | Small archived **aggregate** results for checks and demonstration plots; not raw telemetry |
-| `tests/` | Offline code, archive and synthetic-contract tests |
-| `scripts/` | Source-integrity checks, input validation and archived plot calculation |
-| `docs/` | Data schema, runbook, experiment/source mapping, verification status and publication caveats |
+## Citation
 
-## What has actually been verified?
+If you use this code or build on the method, please cite the accompanying manuscript. Bibliographic details will be updated upon publication; see [`CITATION.cff`](CITATION.cff) for the citation metadata.
 
-- **28 original notebook sources:** archived and independently hash-checked in the repository. Their presence does not mean each was rerun from scratch.
-- **Offline software tests:** 22 tests passed when assembling this package.
-- **Archived summary calculations:** AULEC arithmetic verified for VED, KU, SCUT, TUM and EVE. This uses stored aggregate CSVs, not new model training.
-- **Stage 06 robustness output audit (14 October 2026):** R6, Rev3B, Rev3C, Rev3D and Rev3E saved output files checked; Rev3B still requires historical R2C source-version review.
-- **Stage 07 fixed-time output audit (14 October 2026):** VED/SCUT/TUM output comparisons passed 107 checks, with 0 reported check errors. This is a validation of *stored* predictions, **not** independent raw-to-model reconstruction.
-- **Separate cleanroom R2C run:** a prior checkpoint reported 40/350 completed fits. **Do not claim all 350 independently reproduced from the public code.** The historical/creator-side complete R2C manifest is distinct from this independent rerun.
+## License
 
-See [verification status](docs/VERIFICATION_STATUS.md) for the precise boundaries and [experiment map](docs/EXPERIMENT_MAP.md) for manuscript component coverage.
-
-## Data, reproducibility, and limitations
-
-Source EV telemetry, per-vehicle predictions, private Drive files, and model checkpoint weights are **not included**. Legal access to the original datasets and generation of the canonical input tables are required for a complete reproduction. The repository does not automatically fetch private datasets.
-
-The stored R2C five-seed-averaged predictions changed **binary SHA-256** between a historical 2 October and a current 13 October Drive revision; archived SHA and new SHA are recorded in [source provenance](docs/SOURCE_PROVENANCE.md). Since old revision bytes were not accessible, **scientific-table equivalence has not been proven**. No hash is silently reassigned to imply equivalence.
-
-The original EVE test set had already been exposed during research. Analyses using it are not newly independent confirmatory tests. Segment-level bootstrap intervals and small vehicle counts must not be described as independent cross-vehicle generalization or safety certification.
-
-**Source code availability does not imply open-source reuse permission.** No open-source license is asserted until all relevant rights holders authorize one. See [licensing status](LICENSE_STATUS.md). Cite the accompanying manuscript when available; see `CITATION.cff`.
-
-## Further documentation
-
-[Runbook](docs/RUNBOOK.md) · [Data layout](docs/DATA_LAYOUT.md) · [Experiment map](docs/EXPERIMENT_MAP.md) · [Verification and limitations](docs/VERIFICATION_STATUS.md) · [Release gates](docs/RELEASE_GATES.md) · [GitHub upload guide](docs/GITHUB_UPLOAD.md)
+No open-source license has been assigned yet. See [`LICENSE_STATUS.md`](LICENSE_STATUS.md) for current reuse and permission information.
