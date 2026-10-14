@@ -1,0 +1,21 @@
+{
+  "original_experiment_notebooks": 28,
+  "by_group": {
+    "benchmark_ensemble": 3,
+    "budget_optimization": 2,
+    "fixed_time_sensitivity": 3,
+    "inference": 1,
+    "preprocessing": 10,
+    "primary": 4,
+    "robustness": 5
+  },
+  "current_source": "v02 stage + verified 11B and EVE 12A/B/C",
+  "legacy_sources_are_not_all_reexecuted": true,
+  "r2c_retrained_models_last_known": 40,
+  "r2c_total_expected": 350,
+  "author_decision_required": [
+    "license",
+    "data-release rights",
+    "scientific final audit"
+  ]
+}

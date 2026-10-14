@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "Please cite the accompanying manuscript when available."
+title: "Causal Prior-Residual Learning for Label-Efficient Reconstruction of BMS State of Charge"
+authors:
+  - family-names: "Metin"
+    given-names: "Ahmet"
+  - family-names: "Kadem"
+    given-names: "Onur"

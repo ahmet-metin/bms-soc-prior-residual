@@ -1,0 +1,138 @@
+[
+  {
+    "component": "tab:literature",
+    "stage": "editorial",
+    "source": "docs/EXPERIMENT_MAP.md",
+    "implementation": "manuscript_editorial",
+    "verification": "manual_editorial",
+    "notes": "Literature mapping authored in manuscript; no code-only reproduction"
+  },
+  {
+    "component": "fig:workflow",
+    "stage": "design",
+    "source": "docs/EXPERIMENT_MAP.md",
+    "implementation": "manuscript_editorial",
+    "verification": "manual_editorial",
+    "notes": "Figure 1 is a design illustration; not a numerical model output"
+  },
+  {
+    "component": "tab:data",
+    "stage": "preprocessing",
+    "source": "legacy_sources/notebooks/preprocessing/10A_AllDomain_Canonical_Prep_Colab.ipynb",
+    "implementation": "archived_notebook",
+    "verification": "source_archived",
+    "notes": "Canonical metadata and data acquisition structure"
+  },
+  {
+    "component": "tab:featurecontract",
+    "stage": "preprocessing",
+    "source": "legacy_sources/notebooks/preprocessing/10A_AllDomain_Canonical_Prep_Colab.ipynb",
+    "implementation": "archived_notebook",
+    "verification": "source_archived",
+    "notes": "Frozen causal features and partition boundaries"
+  },
+  {
+    "component": "tab:budget10",
+    "stage": "budget",
+    "source": "legacy_sources/notebooks/budget_optimization/R2B_EffectiveSupervisionBudget_Colab.ipynb",
+    "implementation": "archived_notebook",
+    "verification": "source_archived",
+    "notes": "Union of retained targets and observed segment-start anchors"
+  },
+  {
+    "component": "tab:modelconfig",
+    "stage": "training",
+    "source": "soc_repro/r2c_engine.py",
+    "implementation": "python_module",
+    "verification": "ved_pilot_verified",
+    "notes": "Parameter/optimization comparison; new 350 re-train incomplete"
+  },
+  {
+    "component": "tab:aulec",
+    "stage": "primary_analysis",
+    "source": "soc_repro/postprocess.py",
+    "implementation": "python_module",
+    "verification": "code_unit_tested",
+    "notes": "R7 condition-weighted logarithmic effective-budget AULEC; EVE excludes scored start anchors"
+  },
+  {
+    "component": "fig:labelcurve",
+    "stage": "primary_analysis",
+    "source": "soc_repro/report.py",
+    "implementation": "python_module",
+    "verification": "archived_reference_verified",
+    "notes": "Five panel curves from archived reference or newly supplied full seed-averaged predictions"
+  },
+  {
+    "component": "fig:traj10",
+    "stage": "trajectories",
+    "source": "legacy_sources/notebooks/robustness/Rev3C_SoC_Trajectory_Plots_Colab.ipynb",
+    "implementation": "archived_notebook",
+    "verification": "source_archived",
+    "notes": "Representative duration-selected segments; not error-selected"
+  },
+  {
+    "component": "fig:trajfull",
+    "stage": "trajectories",
+    "source": "legacy_sources/notebooks/robustness/Rev3C_SoC_Trajectory_Plots_Colab.ipynb",
+    "implementation": "archived_notebook",
+    "verification": "source_archived",
+    "notes": "Full-label duration-selected trajectories"
+  },
+  {
+    "component": "fig:socchange",
+    "stage": "change_tracking",
+    "source": "legacy_sources/notebooks/robustness/Rev3D_SoC_ChangeTracking_Colab.ipynb",
+    "implementation": "archived_notebook",
+    "verification": "source_archived",
+    "notes": "Within-segment five-minute delta"
+  },
+  {
+    "component": "tab:ablation",
+    "stage": "ablations",
+    "source": "legacy_sources/notebooks/benchmark_ensemble/R3A_ResidualEnsemble_SupervisionMatched_Colab_FIXED_V5.ipynb",
+    "implementation": "archived_notebook",
+    "verification": "source_archived",
+    "notes": "Prior-only vs disagreement/gating ensemble"
+  },
+  {
+    "component": "tab:benchmark",
+    "stage": "benchmarks",
+    "source": "legacy_sources/notebooks/benchmark_ensemble/R2D_CorrectedSparsePrior_LiteratureBenchmark_Colab_FIXED_V3.ipynb",
+    "implementation": "archived_notebook",
+    "verification": "source_archived",
+    "notes": "Literature controlled adaptations and R3A ensembling, model training not ported"
+  },
+  {
+    "component": "tab:cluster",
+    "stage": "inference",
+    "source": "legacy_sources/notebooks/inference/R4_ClusterAware_Hierarchical_Inference_Colab_FIXED_V4.ipynb",
+    "implementation": "archived_notebook",
+    "verification": "source_archived",
+    "notes": "At least five observed vehicles for cross-vehicle reporting"
+  },
+  {
+    "component": "tab:anchorage",
+    "stage": "anchor_robustness",
+    "source": "soc_repro/robustness.py",
+    "implementation": "python_module",
+    "verification": "code_unit_tested",
+    "notes": "R6 fixed elapsed-time bins, descriptive segment bootstrap"
+  },
+  {
+    "component": "fig:anchorage",
+    "stage": "anchor_robustness",
+    "source": "soc_repro/report.py",
+    "implementation": "python_module",
+    "verification": "code_unit_tested",
+    "notes": "R6 anchor-age figure from five-seed mean test predictions"
+  },
+  {
+    "component": "fig:reanchor",
+    "stage": "periodic_refresh",
+    "source": "soc_repro/reanchoring.py",
+    "implementation": "python_module",
+    "verification": "code_unit_tested",
+    "notes": "Rev3B matched-unobserved offset policy; counts new trusted BMS observations"
+  }
+]
